@@ -5,6 +5,7 @@ package freenet.client;
 
 import java.io.IOException;
 
+import freenet.crypt.DSAPublicKey;
 import freenet.support.api.Bucket;
 import freenet.support.io.BucketTools;
 
@@ -13,12 +14,19 @@ import freenet.support.io.BucketTools;
  */
 public class FetchResult {
 
+	/** The public key of the SSK or USK. */
+	final DSAPublicKey publicKey;
 	final ClientMetadata metadata;
 	final Bucket data;
 	
 	public FetchResult(ClientMetadata dm, Bucket fetched) {
-		metadata = dm;
-		data = fetched;
+		this(null, dm, fetched);
+	}
+
+	public FetchResult(DSAPublicKey publicKey, ClientMetadata clientMetadata, Bucket data) {
+		this.publicKey = publicKey;
+		this.metadata = clientMetadata;
+		this.data = data;
 	}
 
 	/**
@@ -26,11 +34,20 @@ public class FetchResult {
 	 * the same as the old one.
 	 */
 	public FetchResult(FetchResult fr, Bucket output) {
-		this.data = output;
-		this.metadata = fr.metadata;
+		this(null, fr.metadata, output);
 	}
 
-	/** Get the MIME type of the fetched data. 
+	/**
+	 * Returns the public key if the fetched key was an SSK or a USK key and
+	 * the fetch was successful.
+	 *
+	 * @return The public key of the fetched SSK
+	 */
+	public DSAPublicKey getPublicKey() {
+		return publicKey;
+	}
+
+	/** Get the MIME type of the fetched data.
 	 * If unknown, returns application/octet-stream. */
 	public String getMimeType() {
 		return metadata.getMIMEType();

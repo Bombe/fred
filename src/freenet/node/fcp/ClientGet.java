@@ -26,6 +26,7 @@ import freenet.client.events.ExpectedHashesEvent;
 import freenet.client.events.SendingToNetworkEvent;
 import freenet.client.events.SplitfileCompatibilityModeEvent;
 import freenet.client.events.SplitfileProgressEvent;
+import freenet.crypt.DSAPublicKey;
 import freenet.keys.FreenetURI;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
@@ -71,6 +72,8 @@ public class ClientGet extends ClientRequest implements ClientGetCallback, Clien
 	private long foundDataLength = -1;
 	/** MIME type of the found data */
 	private String foundDataMimeType;
+	/** Public key of the SSK, if request was an SSK or USK and succeeded. */
+	private DSAPublicKey publicKey;
 	/** Details of request failure */
 	private GetFailedMessage getFailedMessage;
 	/** Succeeded but failed to return data e.g. couldn't write to file */
@@ -378,6 +381,7 @@ public class ClientGet extends ClientRequest implements ClientGetCallback, Clien
 
 	public void onSuccess(FetchResult result, ClientGetter state, ObjectContainer container) {
 		Logger.minor(this, "Succeeded: "+identifier);
+		publicKey = result.getPublicKey();
 		Bucket data = result.asBucket();
 		if(persistenceType == PERSIST_FOREVER) {
 			if(data != null)
@@ -509,7 +513,7 @@ public class ClientGet extends ClientRequest implements ClientGetCallback, Clien
 		// Don't need to lock. succeeded is only ever set, never unset.
 		// and succeeded and getFailedMessage are both atomic.
 		if(succeeded) {
-			msg = new DataFoundMessage(foundDataLength, foundDataMimeType, identifier, global);
+			msg = new DataFoundMessage(foundDataLength, foundDataMimeType, identifier, global, publicKey);
 		} else {
 			msg = getFailedMessage;
 			if(persistenceType == PERSIST_FOREVER)

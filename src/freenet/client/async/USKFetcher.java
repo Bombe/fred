@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import com.db4o.ObjectContainer;
 
 import freenet.client.FetchContext;
+import freenet.crypt.DSAPublicKey;
 import freenet.keys.ClientKey;
 import freenet.keys.ClientSSK;
 import freenet.keys.ClientSSKBlock;
@@ -109,7 +110,10 @@ public class USKFetcher implements ClientGetState, USKCallback, HasKeyListener, 
 	
 	/** The USK to fetch */
 	private final USK origUSK;
-	
+
+	/** The public key of the SSK, once it has been fetched. */
+	private DSAPublicKey publicKey;
+
 	/** Callbacks */
 	private final LinkedList<USKFetcherCallback> callbacks;
 
@@ -413,6 +417,7 @@ public class USKFetcher implements ClientGetState, USKCallback, HasKeyListener, 
 	
 	void onSuccess(USKAttempt att, long curLatest, boolean dontUpdate, ClientSSKBlock block, final ClientContext context) {
 		final long lastEd = uskManager.lookupLatestSlot(origUSK);
+		publicKey = block.getPubKey();
 		if(logMINOR) Logger.minor(this, "Found edition "+curLatest+" for "+origUSK+" official is "+lastEd+" on "+this);
 		boolean decode = false;
 		Vector<USKAttempt> killAttempts = null;
@@ -587,7 +592,17 @@ public class USKFetcher implements ClientGetState, USKCallback, HasKeyListener, 
 	public USK getOriginalUSK() {
 		return origUSK;
 	}
-	
+
+	/**
+	 * Returns the public key of the underlying SSK. This method will only
+	 * return a valid reply if the fetch was successful.
+	 *
+	 * @return The public key of the SSK
+	 */
+	public DSAPublicKey getPublicKey() {
+		return publicKey;
+	}
+
 	public void schedule(long delay, ObjectContainer container, final ClientContext context) {
 		assert(container == null);
 		if (delay<=0) {

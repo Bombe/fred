@@ -6,6 +6,7 @@ package freenet.node.fcp;
 import com.db4o.ObjectContainer;
 
 import freenet.client.FetchResult;
+import freenet.crypt.DSAPublicKey;
 import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
@@ -15,12 +16,14 @@ public class DataFoundMessage extends FCPMessage {
 	final boolean global;
 	final String mimeType;
 	final long dataLength;
-	
+	final DSAPublicKey publicKey;
+
 	public DataFoundMessage(FetchResult fr, String identifier, boolean global) {
 		this.identifier = identifier;
 		this.global = global;
 		this.mimeType = fr.getMimeType();
 		this.dataLength = fr.size();
+		this.publicKey = fr.getPublicKey();
 	}
 
 	public DataFoundMessage(long foundDataLength, String foundDataMimeType, String identifier, boolean global) {
@@ -28,6 +31,15 @@ public class DataFoundMessage extends FCPMessage {
 		this.identifier = identifier;
 		this.global = global;
 		this.dataLength = foundDataLength;
+		this.publicKey = null;
+	}
+
+	public DataFoundMessage(long foundDataLength, String foundDataMimeType, String identifier, boolean global, DSAPublicKey publicKey) {
+		this.mimeType = foundDataMimeType;
+		this.identifier = identifier;
+		this.global = global;
+		this.dataLength = foundDataLength;
+		this.publicKey = publicKey;
 	}
 
 	@Override
@@ -37,6 +49,9 @@ public class DataFoundMessage extends FCPMessage {
 		if(global) fs.putSingle("Global", "true");
 		fs.putSingle("Metadata.ContentType", mimeType);
 		fs.putSingle("DataLength", Long.toString(dataLength));
+		if (publicKey != null) {
+			fs.putSingle("PublicKey", publicKey.toString());
+		}
 		return fs;
 	}
 

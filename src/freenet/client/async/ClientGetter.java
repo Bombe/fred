@@ -248,7 +248,11 @@ public class ClientGetter extends BaseClientGetter {
 			else finalResult = returnBucket;
 			if(logMINOR) Logger.minor(this, "Writing final data to "+finalResult+" return bucket is "+returnBucket);
 			dataOutput .connect(dataInput);
-			result = new FetchResult(clientMetadata, finalResult);
+			if (state instanceof USKFetcher) {
+				result = new FetchResult(((USKFetcher) state).getPublicKey(), clientMetadata, finalResult);
+			} else {
+				result = new FetchResult(clientMetadata, finalResult);
+			}
 
 			// Decompress
 			if(decompressors != null) {
@@ -283,7 +287,11 @@ public class ClientGetter extends BaseClientGetter {
 
 			if(worker.getClientMetadata() != null) {
 				clientMetadata = worker.getClientMetadata();
-				result = new FetchResult(clientMetadata, finalResult);
+				if (state instanceof USKFetcher) {
+					result = new FetchResult(((USKFetcher) state).getPublicKey(), clientMetadata, finalResult);
+				} else {
+					result = new FetchResult(clientMetadata, finalResult);
+				}
 			}
 			dataOutput.close();
 			dataInput.close();
