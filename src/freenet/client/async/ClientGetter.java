@@ -250,6 +250,8 @@ public class ClientGetter extends BaseClientGetter {
 			dataOutput .connect(dataInput);
 			if (state instanceof USKFetcher) {
 				result = new FetchResult(((USKFetcher) state).getPublicKey(), clientMetadata, finalResult);
+			} else if (state instanceof SingleFileFetcher) {
+				result = new FetchResult(((SingleFileFetcher) state).getPublicKey(), clientMetadata, finalResult);
 			} else {
 				result = new FetchResult(clientMetadata, finalResult);
 			}
@@ -289,6 +291,8 @@ public class ClientGetter extends BaseClientGetter {
 				clientMetadata = worker.getClientMetadata();
 				if (state instanceof USKFetcher) {
 					result = new FetchResult(((USKFetcher) state).getPublicKey(), clientMetadata, finalResult);
+				} else if (state instanceof SingleFileFetcher) {
+					result = new FetchResult(((SingleFileFetcher) state).getPublicKey(), clientMetadata, finalResult);
 				} else {
 					result = new FetchResult(clientMetadata, finalResult);
 				}

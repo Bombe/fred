@@ -27,6 +27,7 @@ import freenet.client.FetchException;
 import freenet.client.FetchResult;
 import freenet.client.Metadata;
 import freenet.client.MetadataParseException;
+import freenet.crypt.DSAPublicKey;
 import freenet.client.InsertContext.CompatibilityMode;
 import freenet.crypt.HashResult;
 import freenet.crypt.MultiHashInputStream;
@@ -78,6 +79,8 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 	private int recursionLevel;
 	/** The URI of the currently-being-processed data, for archives etc. */
 	private FreenetURI thisKey;
+	/** The public key if the key being fetched is SSK or USK. */
+	private final DSAPublicKey publicKey;
 	private final LinkedList<COMPRESSOR_TYPE> decompressors;
 	private final boolean dontTellClientGet;
 	/** If true, success/failure is immediately reported to the client, and therefore we can check TOO_MANY_PATH_COMPONENTS. */
@@ -115,6 +118,7 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 		this.addedMetaStrings = addedMetaStrings;
 		this.clientMetadata = (metadata != null ? metadata.clone() : new ClientMetadata());
 		thisKey = key.getURI();
+		publicKey = (key instanceof ClientSSK) ? ((ClientSSK) key).getPubKey() : null;
 		if(origURI == null) throw new NullPointerException();
 		this.uri = persistent ? origURI.clone() : origURI;
 		this.actx = actx;
@@ -159,6 +163,7 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 		// Copy the decompressors. Just because a multi-level metadata splitfile 
 		// is compressed, that **doesn't** mean that the data we are eventually 
 		// going to fetch is!
+		publicKey = (key instanceof ClientSSK) ? ((ClientSSK) key).getPubKey() : null;
 		this.decompressors = new LinkedList<COMPRESSOR_TYPE>(fetcher.decompressors);
 		if(fetcher.uri == null) throw new NullPointerException();
 		this.uri = persistent ? fetcher.uri.clone() : fetcher.uri;
@@ -166,6 +171,15 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 		this.bucketSnoop = fetcher.bucketSnoop;
 		this.topDontCompress = fetcher.topDontCompress;
 		this.topCompatibilityMode = fetcher.topCompatibilityMode;
+	}
+
+	/**
+	 * Returns the public key if the key being fetched was an SSK or a USK.
+	 *
+	 * @return The public key of the SSK
+	 */
+	public DSAPublicKey getPublicKey() {
+		return publicKey;
 	}
 
 	// Process the completed data. May result in us going to a
