@@ -37,6 +37,7 @@ import freenet.keys.ClientKey;
 import freenet.keys.ClientKeyBlock;
 import freenet.keys.ClientSSK;
 import freenet.keys.FreenetURI;
+import freenet.keys.NodeSSK;
 import freenet.keys.USK;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
@@ -118,7 +119,7 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 		this.addedMetaStrings = addedMetaStrings;
 		this.clientMetadata = (metadata != null ? metadata.clone() : new ClientMetadata());
 		thisKey = key.getURI();
-		publicKey = (key instanceof ClientSSK) ? ((ClientSSK) key).getPubKey() : null;
+		publicKey = (key.getNodeKey() instanceof NodeSSK) ? ((NodeSSK) key.getNodeKey()).getPubKey() : null;
 		if(origURI == null) throw new NullPointerException();
 		this.uri = persistent ? origURI.clone() : origURI;
 		this.actx = actx;
@@ -163,7 +164,7 @@ public class SingleFileFetcher extends SimpleSingleFileFetcher {
 		// Copy the decompressors. Just because a multi-level metadata splitfile 
 		// is compressed, that **doesn't** mean that the data we are eventually 
 		// going to fetch is!
-		publicKey = (key instanceof ClientSSK) ? ((ClientSSK) key).getPubKey() : null;
+		publicKey = (key.getNodeKey() instanceof NodeSSK) ? ((NodeSSK) key.getNodeKey()).getPubKey() : null;
 		this.decompressors = new LinkedList<COMPRESSOR_TYPE>(fetcher.decompressors);
 		if(fetcher.uri == null) throw new NullPointerException();
 		this.uri = persistent ? fetcher.uri.clone() : fetcher.uri;
