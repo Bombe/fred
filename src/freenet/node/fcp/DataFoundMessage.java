@@ -50,7 +50,10 @@ public class DataFoundMessage extends FCPMessage {
 		fs.putSingle("Metadata.ContentType", mimeType);
 		fs.putSingle("DataLength", Long.toString(dataLength));
 		if (publicKey != null) {
-			fs.putSingle("PublicKey", publicKey.toString());
+			fs.putSingle("dsaPubKey.y", publicKey.getY().toString(16));
+			fs.putSingle("dsaGroup.p", publicKey.getP().toString(16));
+			fs.putSingle("dsaGroup.g", publicKey.getG().toString(16));
+			fs.putSingle("dsaGroup.q", publicKey.getQ().toString(16));
 		}
 		return fs;
 	}
