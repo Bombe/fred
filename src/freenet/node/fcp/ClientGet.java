@@ -64,6 +64,7 @@ public class ClientGet extends ClientRequest implements ClientGetCallback, Clien
 	private static final int VERBOSITY_SENT_TO_NETWORK = 2;
 	private static final int VERBOSITY_COMPATIBILITY_MODE = 4;
 	private static final int VERBOSITY_EXPECTED_HASHES = 8;
+	private static final int VERBOSITY_PUBLIC_KEY = 16;
 
 	// Stuff waiting for reconnection
 	/** Did the request succeed? Valid if finished. */
@@ -513,7 +514,7 @@ public class ClientGet extends ClientRequest implements ClientGetCallback, Clien
 		// Don't need to lock. succeeded is only ever set, never unset.
 		// and succeeded and getFailedMessage are both atomic.
 		if(succeeded) {
-			msg = new DataFoundMessage(foundDataLength, foundDataMimeType, identifier, global, publicKey);
+			msg = new DataFoundMessage(foundDataLength, foundDataMimeType, identifier, global, ((verbosity & VERBOSITY_PUBLIC_KEY) != 0) ? publicKey : null);
 		} else {
 			msg = getFailedMessage;
 			if(persistenceType == PERSIST_FOREVER)
