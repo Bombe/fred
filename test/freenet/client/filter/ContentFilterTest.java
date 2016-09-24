@@ -5,6 +5,7 @@ package freenet.client.filter;
 
 import junit.framework.TestCase;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,8 @@ import freenet.client.filter.ContentFilter.FilterStatus;
 import freenet.client.filter.HTMLFilter.ParsedTag;
 import freenet.client.filter.HTMLFilter.TagVerifier;
 import freenet.clients.http.ExternalLinkToadlet;
+import freenet.l10n.BaseL10n.LANGUAGE;
+import freenet.l10n.NodeL10n;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.TestProperty;
@@ -120,6 +123,11 @@ public class ContentFilterTest extends TestCase {
 	// From CSS spec
 
 	private static final String CSS_SPEC_EXAMPLE1 = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n<HTML>\n  <HEAD>\n  <TITLE>Bach's home page</TITLE>\n  <STYLE type=\"text/css\">\n    body {\n      font-family: \"Gill Sans\", sans-serif;\n      font-size: 12pt;\n      margin: 3em;\n\n    }\n  </STYLE>\n  </HEAD>\n  <BODY>\n    <H1>Bach's home page</H1>\n    <P>Johann Sebastian Bach was a prolific composer.\n  </BODY>\n</HTML>";
+
+	public ContentFilterTest() {
+		/* replace this with @Before once Fred leaves the ancient past. */
+		new NodeL10n(LANGUAGE.UNLISTED, new File("."));
+	}
 
 	public void testHTMLFilter() throws Exception {
 		if (TestProperty.VERBOSE) {
