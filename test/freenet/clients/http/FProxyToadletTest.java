@@ -113,6 +113,12 @@ public class FProxyToadletTest {
 		assertThat(getHttpResponse(toadletContext), isRedirectTo("/downloads/"));
 	}
 
+	@Test
+	public void requestsForConfigRedirectsToNodeConfigPage() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/config/"), mock(), toadletContext);
+		assertThat(getHttpResponse(toadletContext), isRedirectTo("/config/node"));
+	}
+
 	private final HighLevelSimpleClient mock = mock(HighLevelSimpleClient.class, RETURNS_DEEP_STUBS);
 	private final NodeClientCore nodeClientCore = mock(NodeClientCore.class, RETURNS_DEEP_STUBS);
 	private final MultiValueTable<String, String> headers = new MultiValueTable<>();
