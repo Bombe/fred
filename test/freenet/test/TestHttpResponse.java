@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -18,6 +19,9 @@ import org.mockito.Mockito;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOfRange;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.atMostOnce;
@@ -101,6 +105,14 @@ public class TestHttpResponse {
 
 	public static Matcher<TestHttpResponse> hasMimeType(Matcher<? super String> mimeTypeMatcher) {
 		return isResponse(TestHttpResponse::getMimeType, "MIME type", mimeTypeMatcher);
+	}
+
+	public static Matcher<TestHttpResponse> isRedirectTo(String location) {
+		return allOf(hasStatus(equalTo(301)), hasHeaderField("Location", hasItem(equalTo(location))));
+	}
+
+	public static Matcher<TestHttpResponse> hasHeaderField(String header, Matcher<? super List<String>> headerValueMatcher) {
+		return isResponse(httpResponse -> httpResponse.getHeaders().getAllAsList(header), "headers", headerValueMatcher);
 	}
 
 	public static Matcher<TestHttpResponse> hasBody(Matcher<? super String> bodyMatcher) {

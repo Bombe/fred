@@ -13,6 +13,7 @@ import static freenet.test.TestHttpResponse.hasBody;
 import static freenet.test.TestHttpResponse.hasBodyLines;
 import static freenet.test.TestHttpResponse.hasMimeType;
 import static freenet.test.TestHttpResponse.hasStatus;
+import static freenet.test.TestHttpResponse.isRedirectTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -80,6 +81,30 @@ public class FProxyToadletTest {
 				hasStatus(equalTo(400)),
 				hasMimeType(equalTo("text/html; charset=utf-8"))
 		));
+	}
+
+	@Test
+	public void requestForDarknetWithoutSlashSendsRedirectToFriendsPage() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/darknet"), mock(), toadletContext);
+		assertThat(getHttpResponse(toadletContext), isRedirectTo("/friends/"));
+	}
+
+	@Test
+	public void requestForDarknetWithSlashSendsRedirectToFriendsPage() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/darknet/"), mock(), toadletContext);
+		assertThat(getHttpResponse(toadletContext), isRedirectTo("/friends/"));
+	}
+
+	@Test
+	public void requestForOpennetWithoutSlashSendsRedirectToStrangersPage() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/opennet"), mock(), toadletContext);
+		assertThat(getHttpResponse(toadletContext), isRedirectTo("/strangers/"));
+	}
+
+	@Test
+	public void requestForOpennetWithSlashSendsRedirectToStrangersPage() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/opennet/"), mock(), toadletContext);
+		assertThat(getHttpResponse(toadletContext), isRedirectTo("/strangers/"));
 	}
 
 	private final HighLevelSimpleClient mock = mock(HighLevelSimpleClient.class, RETURNS_DEEP_STUBS);
