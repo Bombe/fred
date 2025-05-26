@@ -2,6 +2,7 @@ package freenet.clients.http;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.node.NodeClientCore;
+import freenet.support.HTMLNode;
 import freenet.support.MultiValueTable;
 import freenet.support.api.HTTPRequest;
 import java.net.URI;
@@ -18,6 +19,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -71,6 +73,15 @@ public class FProxyToadletTest {
 		));
 	}
 
+	@Test
+	public void requestForRobotsTxtWithRobotsDisabledReturnsError400() throws Exception {
+		fproxyToadlet.handleMethodGET(new URI("/robots.txt"), mock(HTTPRequest.class), toadletContext);
+		assertThat(getHttpResponse(toadletContext), allOf(
+				hasStatus(equalTo(400)),
+				hasMimeType(equalTo("text/html; charset=utf-8"))
+		));
+	}
+
 	private final HighLevelSimpleClient mock = mock(HighLevelSimpleClient.class, RETURNS_DEEP_STUBS);
 	private final NodeClientCore nodeClientCore = mock(NodeClientCore.class, RETURNS_DEEP_STUBS);
 	private final MultiValueTable<String, String> headers = new MultiValueTable<>();
@@ -79,7 +90,12 @@ public class FProxyToadletTest {
 	private final Toadlet fproxyToadlet = new FProxyToadlet(mock, nodeClientCore, null);
 
 	{
+		HTMLNode.HTMLDoctype htmlNode = new HTMLNode.HTMLDoctype("html", "");
+		HTMLNode headNode = htmlNode.addChild("head");
+		HTMLNode contentNode = htmlNode.addChild("body");
+		PageNode pageNode = new PageNode(htmlNode, headNode, contentNode);
 		when(toadletContext.getHeaders()).thenReturn(headers);
+		when(toadletContext.getPageMaker().getPageNode(any(), any())).thenReturn(pageNode);
 		fproxyToadlet.container = toadletContainer;
 	}
 
