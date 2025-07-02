@@ -5684,7 +5684,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 		return !failed;
 	}
 	
-	protected final byte[] getPubKeyHash() {
+	public final byte[] getPubKeyHash() {
 	    return peerECDSAPubKeyHash;
 	}
 
