@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import freenet.node.DarknetPeerNode;
 import freenet.node.PeerNode;
 import freenet.support.HTMLNode;
+import freenet.test.UseTestTranslation;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -31,20 +32,19 @@ import javax.xml.xpath.XPathFactory;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import freenet.l10n.BaseL10nTest;
 import freenet.node.NodeClientCore;
 
 public class UserAlertManagerTest {
 
 	@Test
 	public void generatedAtomContainsTitle() throws Exception {
-		BaseL10nTest.useTestTranslation();
 		verifyStringPropertyInGeneratedAtom("/feed/title", equalTo("UserAlertManager.feedTitle"));
 	}
 
@@ -217,5 +217,8 @@ public class UserAlertManagerTest {
 
 	private final UserAlertManager userAlertManager = new UserAlertManager(nodeClientCore);
 	private static final XPath xPath = XPathFactory.newInstance().newXPath();
+
+	@Rule
+	public final UseTestTranslation useTestTranslation = new UseTestTranslation();
 
 }
