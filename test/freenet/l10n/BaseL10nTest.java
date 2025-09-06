@@ -267,7 +267,16 @@ public class BaseL10nTest {
      * {@link NodeL10n}, allowing tests for translation keys.
      */
     public static void useTestTranslation() {
-        NodeL10n.setBase(createTestL10n(LANGUAGE.ENGLISH));
+        useTranslation(createTestL10n(LANGUAGE.ENGLISH));
+    }
+
+    /**
+     * Installs the given {@link BaseL10n} into the global {@link NodeL10n}.
+     *
+     * @param baseL10n The {@link BaseL10n} to install
+     */
+    public static void useTranslation(BaseL10n baseL10n) {
+        NodeL10n.setBase(baseL10n);
     }
 
 }
