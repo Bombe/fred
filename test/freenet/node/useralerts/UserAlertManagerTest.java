@@ -14,7 +14,9 @@ import static org.mockito.Mockito.when;
 
 import freenet.node.DarknetPeerNode;
 import freenet.node.PeerNode;
+import freenet.support.Base64;
 import freenet.support.HTMLNode;
+import freenet.support.IllegalBase64Exception;
 import freenet.test.UseTestTranslation;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
@@ -32,6 +34,8 @@ import javax.xml.xpath.XPathFactory;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -201,20 +205,60 @@ public class UserAlertManagerTest {
 
 	@Test
 	public void renderingAnAlertWithAN2NTMRendersAReplyButton() {
-		DarknetPeerNode darknetPeerNode = mock(DarknetPeerNode.class, RETURNS_DEEP_STUBS);
-		when(darknetPeerNode.getWeakRef()).thenReturn(new WeakReference<>(mock(PeerNode.class)));
-		UserAlert userAlert = new N2NTMUserAlert(darknetPeerNode, "", 0, 0, 0, 0);
-		when(nodeClientCore.getFormPassword()).thenReturn("form-password");
-		HTMLNode htmlNode = userAlertManager.renderAlert(userAlert);
+		HTMLNode htmlNode = userAlertManager.renderAlert(node2NodeTextMessageUserAlert);
 		assertThat(htmlNode.generate(), isHtml(withElement("form[method='post'][action='/send_n2ntm/'] button[type='submit']")));
 	}
 
+	@Test
+	public void renderingAnAlertWithAN2NTMRendersCorrectTextIntoButton() {
+		HTMLNode htmlNode = userAlertManager.renderAlert(node2NodeTextMessageUserAlert);
+		Element button = Jsoup.parse(htmlNode.generate()).selectFirst("form[method='post'][action='/send_n2ntm/'] button[type='submit']");
+		assertThat(button.text(), equalTo("UserAlertManager.reply"));
+	}
+
+	@Test
+	public void renderingAnAlertWithAnN2NTMRendersTheFormPasswordIntoTheForm() {
+		HTMLNode htmlNode = userAlertManager.renderAlert(node2NodeTextMessageUserAlert);
+		assertThat(htmlNode.generate(), isHtml(withElement("form[method='post'][action='/send_n2ntm/'] input[name='formPassword'][value='form-password']")));
+	}
+
+	@Test
+	public void renderingAnAlertWithAnN2NTMIncludesTheOriginalMessageText() throws IllegalBase64Exception {
+		String message = "Hello test user,\n\nthis is a test message.\nGood bye!\n";
+		UserAlert userAlert = new N2NTMUserAlert(darknetPeerNode, message, 0, 0, 0, 0);
+		HTMLNode htmlNode = userAlertManager.renderAlert(userAlert);
+		String originalMessageText = Jsoup.parse(htmlNode.generate()).select("form[method='post'][action='/send_n2ntm/'] input[name='replyTo']").attr("value");
+		assertThat(Base64.decodeUTF8(originalMessageText), equalTo(message));
+	}
+
+	@Test
+	public void renderingAnAlertWithAnN2NTMIncludesThePeerNodesHashcode() {
+		HTMLNode htmlNode = userAlertManager.renderAlert(node2NodeTextMessageUserAlert);
+		assertThat(htmlNode.generate(), isHtml(withElement("form[method='post'][action='/send_n2ntm/'] input[name='peernode_hashcode'][value='" + peerNode.hashCode() + "']")));
+	}
+
+	@Test
+	public void renderingAnAlertWithAnN2NTMIncludesEmptyHashcodeIfPeerIsNull() {
+		when(darknetPeerNode.getWeakRef()).thenReturn(null);
+		UserAlert node2NodeTextMessageUserAlert = new N2NTMUserAlert(darknetPeerNode, "", 0, 0, 0, 0);
+		HTMLNode htmlNode = userAlertManager.renderAlert(node2NodeTextMessageUserAlert);
+		assertThat(htmlNode.generate(), isHtml(withElement("form[method='post'][action='/send_n2ntm/'] input[name='peernode_hashcode'][value='']")));
+	}
+
 	private final NodeClientCore nodeClientCore = mock(NodeClientCore.class, RETURNS_DEEP_STUBS);
+	private final DarknetPeerNode darknetPeerNode = mock(DarknetPeerNode.class, RETURNS_DEEP_STUBS);
+	private final PeerNode peerNode = mock(PeerNode.class);
 
 	{
 		when(nodeClientCore.getNode().getDarknetPubKeyHash()).thenReturn(new byte[] { 1, 2, 3, 4 });
+		when(nodeClientCore.getFormPassword()).thenReturn("form-password");
+		// if this test starts to not work anymore, somebody updated Mockito to a version >= 3. Unfortunately,
+		// WeakReference is one of the types that Mockito starts using for internal representation of stuff,
+		// so mocking with it becomes an impossibility.
+		when(darknetPeerNode.getWeakRef()).thenReturn(new WeakReference<>(peerNode));
 	}
 
+	private final UserAlert node2NodeTextMessageUserAlert = new N2NTMUserAlert(darknetPeerNode, "", 0, 0, 0, 0);
 	private final UserAlertManager userAlertManager = new UserAlertManager(nodeClientCore);
 	private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
